@@ -1,6 +1,29 @@
 // const iframe = document.querySelector('#vimeo-player');
 // const player = new Vimeo.Player(iframe);
-import Player from '@vimeo/player';
+import Vimeo from '@vimeo/player';
+import throttle from 'lodash.throttle';
 
-const iframe = document.querySelector('iframe');
-const player = new Player(iframe);
+const vimeoPlayer = new Vimeo('vimeo-player');
+
+const VIDEO_KEY = 'videoplayer-current-time';
+
+// Функція для збереження поточного часу відтворення у локальному сховищі
+function saveCurrentTime(time) {
+  localStorage.setItem(VIDEO_KEY, JSON.stringify(time));
+}
+
+// Функція для завантаження поточного часу відтворення з локального сховища
+function loadCurrentTime() {
+  const savedTime = localStorage.getItem(VIDEO_KEY);
+  return savedTime ? JSON.parse(savedTime) : 0;
+}
+
+vimeoPlayer.setCurrentTime(loadCurrentTime());
+
+vimeoPlayer.on(
+  'timeupdate',
+  throttle(data => {
+    const currentTime = data.seconds;
+    saveCurrentTime(currentTime);
+  }, 1000)
+);
